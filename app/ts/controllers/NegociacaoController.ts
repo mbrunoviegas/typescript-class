@@ -1,7 +1,9 @@
-import { Negociacao, Negociacoes } from "../models/index";
+import { Negociacao, Negociacoes, INegociacaoParcial } from "../models/index";
 import { MensagemView, NegociacoesView } from "../views/index";
 import { Utils } from "../utils/Utils";
-import { DomInject } from "../helpers/decorators/DomInject";
+import { DomInject, Throttle } from "../helpers/decorators/index";
+import { NegociacaoService } from "../services/index";
+
 export class NegociacaoController {
   @DomInject("#data")
   private _inputData: JQuery;
@@ -12,6 +14,7 @@ export class NegociacaoController {
   private _negociacoes = new Negociacoes();
   private _negociacoesView = new NegociacoesView("#negociacoesView");
   private _mensagemView = new MensagemView("#mensagemView");
+  private _negociacaoService = new NegociacaoService();
 
   constructor() {
     this._negociacoesView.update(this._negociacoes);
@@ -33,6 +36,29 @@ export class NegociacaoController {
       this._negociacoes.adiciona(negociacao);
       this._negociacoesView.update(this._negociacoes);
       this._mensagemView.update("Negociação adicionada com sucesso");
+
     }
+  }
+
+  @Throttle()
+  importData() {
+    this._negociacaoService
+      .importData((res) => {
+        if (res.ok) return res;
+        throw new Error(res.statusText);
+      })
+      .then((negociacoesParaImportar) => {
+        const negociacoesJaImportadas = this._negociacoes.paraArray();
+
+        negociacoesParaImportar
+          .filter(
+            (negociacao) =>
+              !negociacoesJaImportadas.some((jaImportada) =>
+                negociacao.isEqual(jaImportada)
+              )
+          )
+          .forEach((negociacao) => this._negociacoes.adiciona(negociacao));
+        this._negociacoesView.update(this._negociacoes);
+      });
   }
 }

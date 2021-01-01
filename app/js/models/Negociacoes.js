@@ -15,6 +15,12 @@ System.register([], function (exports_1, context_1) {
                 paraArray() {
                     return Object.assign([], this._negociacoes);
                 }
+                toText() {
+                    console.log(JSON.stringify(this._negociacoes));
+                }
+                isEqual(object) {
+                    return (JSON.stringify(this._negociacoes) === JSON.stringify(object.paraArray()));
+                }
             };
             exports_1("Negociacoes", Negociacoes);
         }

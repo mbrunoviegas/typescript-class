@@ -1,4 +1,4 @@
-System.register(["../models/index", "../views/index", "../utils/Utils", "../helpers/decorators/DomInject"], function (exports_1, context_1) {
+System.register(["../models/index", "../views/index", "../utils/Utils", "../helpers/decorators/index", "../services/index"], function (exports_1, context_1) {
     "use strict";
     var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
         var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -6,7 +6,7 @@ System.register(["../models/index", "../views/index", "../utils/Utils", "../help
         else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
         return c > 3 && r && Object.defineProperty(target, key, r), r;
     };
-    var index_1, index_2, Utils_1, DomInject_1, NegociacaoController;
+    var index_1, index_2, Utils_1, index_3, index_4, NegociacaoController;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
@@ -19,8 +19,11 @@ System.register(["../models/index", "../views/index", "../utils/Utils", "../help
             function (Utils_1_1) {
                 Utils_1 = Utils_1_1;
             },
-            function (DomInject_1_1) {
-                DomInject_1 = DomInject_1_1;
+            function (index_3_1) {
+                index_3 = index_3_1;
+            },
+            function (index_4_1) {
+                index_4 = index_4_1;
             }
         ],
         execute: function () {
@@ -29,6 +32,7 @@ System.register(["../models/index", "../views/index", "../utils/Utils", "../help
                     this._negociacoes = new index_1.Negociacoes();
                     this._negociacoesView = new index_2.NegociacoesView("#negociacoesView");
                     this._mensagemView = new index_2.MensagemView("#mensagemView");
+                    this._negociacaoService = new index_4.NegociacaoService();
                     this._negociacoesView.update(this._negociacoes);
                 }
                 adiciona(event) {
@@ -44,16 +48,34 @@ System.register(["../models/index", "../views/index", "../utils/Utils", "../help
                         this._mensagemView.update("Negociação adicionada com sucesso");
                     }
                 }
+                importData() {
+                    this._negociacaoService
+                        .importData((res) => {
+                        if (res.ok)
+                            return res;
+                        throw new Error(res.statusText);
+                    })
+                        .then((negociacoesParaImportar) => {
+                        const negociacoesJaImportadas = this._negociacoes.paraArray();
+                        negociacoesParaImportar
+                            .filter((negociacao) => !negociacoesJaImportadas.some((jaImportada) => negociacao.isEqual(jaImportada)))
+                            .forEach((negociacao) => this._negociacoes.adiciona(negociacao));
+                        this._negociacoesView.update(this._negociacoes);
+                    });
+                }
             };
             __decorate([
-                DomInject_1.default("#data")
+                index_3.DomInject("#data")
             ], NegociacaoController.prototype, "_inputData", void 0);
             __decorate([
-                DomInject_1.default("#quantidade")
+                index_3.DomInject("#quantidade")
             ], NegociacaoController.prototype, "_inputQuantidade", void 0);
             __decorate([
-                DomInject_1.default("#valor")
+                index_3.DomInject("#valor")
             ], NegociacaoController.prototype, "_inputValor", void 0);
+            __decorate([
+                index_3.Throttle()
+            ], NegociacaoController.prototype, "importData", null);
             exports_1("NegociacaoController", NegociacaoController);
         }
     };
